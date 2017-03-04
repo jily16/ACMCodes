@@ -1,85 +1,131 @@
 /**************************************
 **	author:jily
-**	update:3/1/2017
-**	ËµÃ÷
-**	ÎªÁËÍ×Ğ­POJµÈÒ»ÏµÁĞOJÆ½Ì¨µÄÂäÎé
-**		Ä£°å²»²ÉÓÃC++11ÒÔºóµÄĞÂÌØĞÔ
-**			ÖĞÎÄ¶ººÅÌ«³óËùÒÔ±¾ÎÄÄşÔ¸ÓÃ»»ĞĞ¼ÓËõ½ø
-**	Í¼½á¹¹µÄ±íÊ¾Ä¬ÈÏ²ÉÓÃÁÚ½Ó¾ØÕó
+**	update:3/4/2017
+**	è¯´æ˜
+**	ä¸ºäº†å¦¥åPOJç­‰ä¸€ç³»åˆ—OJå¹³å°çš„è½ä¼
+**		æ¨¡æ¿ä¸é‡‡ç”¨C++11ä»¥åçš„æ–°ç‰¹æ€§
+**			ä¸­æ–‡é€—å·å¤ªä¸‘æ‰€ä»¥æœ¬æ–‡å®æ„¿ç”¨æ¢è¡ŒåŠ ç¼©è¿›
+**	å›¾ç»“æ„çš„è¡¨ç¤ºé»˜è®¤é‡‡ç”¨é‚»æ¥çŸ©é˜µ
 **************************************/
 
+#include <iostream>
+#include <queue>
 #include <vector>
 using namespace std;
 
-int const INF = 0x3f3f3f3f;
+int const INF = 0x3f3f3f3f;	//ç¥å¥‡çš„æ— ç©·å¤§
 
-//²¢²é¼¯Union-FindËã·¨
-//°´ÖÈºÏ²¢
-	//ÒòÎªÎ¬»¤³É±¾
-		//²»Â·¾¶Ñ¹Ëõ
-void init_set(vector<int> &s, vector<int> &rank)
+namespace ufs
 {
-	for (int i = 0; i < s.size(); ++i) s[i] = i;
-	for (int i = 0; i < rank.size(); ++i) rank[i] = 1;	//ÖÈÊôĞÔ¼ÓËÙºóÆÚµÄ²éÕÒ
-}
-int find_key(vector<int> const &s, int x)
-{
-	while (x != s[x]) x = s[x];	//µü´úÇó·¨
-	return x;
-}
-void union_set(vector<int> &s, vector<int> &rank, int x, int y)
-{
-	if (find_key(s, x) == find_key(s, y)) return;
-	if (rank[x] > rank[y]) s[y] = x;
-	else if (rank[x] == rank[y])	//µÈ¸ß¼¯¸üĞÂÖÈ
+	//å¹¶æŸ¥é›†Union-Findç®—æ³•
+	//æŒ‰ç§©åˆå¹¶
+		//å› ä¸ºç»´æŠ¤æˆæœ¬
+			//ä¸è·¯å¾„å‹ç¼©
+	void init_set(vector<int> &s, vector<int> &rank)
 	{
-		s[x] = y;
-		++rank[y];
+		for (int i = 0; i < s.size(); ++i) s[i] = i;
+		for (int i = 0; i < rank.size(); ++i) rank[i] = 1;	//ç§©å±æ€§åŠ é€ŸåæœŸçš„æŸ¥æ‰¾
 	}
-	else s[x] = y;
-}
-
-
-
-//PrimËã·¨»ñµÃ×îĞ¡Éú³ÉÊ÷(È«¾¶È¨Öµ)
-//Ä£°åÌâPOJ1251
-//¸ĞĞ»²©Ö÷http://www.cnblogs.com/Veegin/archive/2011/04/29/2032388.htmlÌá¹©ÓÅĞãµÄ×ö·¨
-int prim(vector<vector<int> > const &g)
-{
-	int n = g.size();	//¶¥µãÊı
-	int sum = 0;
-	vector<bool> vst(n, false);	//visited¾ÍÊÇÒÑ¾­ÔÚÊ÷ÉÏ
-	vector<int> closest(n);
-	vst[0] = true;
-	int pos = 0;
-	for (int i = 1; i < n; ++i)
+	int find_key(vector<int> const &s, int x)
 	{
-		closest[i] = g[0][i];	//³õÊ¼»¯¾àÀëÊı×é
-									//²»²ÉÓÃËãµ¼µÄkey³ÉÔ±×ö·¨¶øÊÇµ¥¿ªÊı×é±Ï¾¹·½±ãºÃĞ´
+		while (x != s[x]) x = s[x];	//è¿­ä»£æ±‚æ³•
+		return x;
 	}
-	for (int i = 0; i < n - 1; ++i)
+	void union_set(vector<int> &s, vector<int> &rank, int x, int y)
 	{
-		int min = INF;
-		for (int j = 0; j < n; ++j)
+		if (find_key(s, x) == find_key(s, y)) return;
+		if (rank[x] > rank[y]) s[y] = x;
+		else if (rank[x] == rank[y])	//ç­‰é«˜é›†æ›´æ–°ç§©
 		{
-			if (!vst[j] && closest[j] < min)
+			s[x] = y;
+			++rank[y];
+		}
+		else s[x] = y;
+	}
+}
+
+namespace graph
+{
+	//æ‹“æ‰‘æ’åº
+	//Directed Acyclic Graph(DAG)
+	bool torpological_sort(vector<vector<int> > const &g)
+	{
+		int n = g.size();
+		vector<int> d(n);	//å…¥åº¦æ•°ç»„
+		queue<int> q;	//0å…¥åº¦é¡¶ç‚¹é›†åˆ
+		while (!q.empty()) q.pop();
+		for (int i = 0; i < n; ++i)
+		{
+			for (int j = 0; j < n; ++j)
 			{
-				min = closest[j];
-				pos = j;
+				if (g[i][j] < INF)
+				{
+					++d[j];
+				}
 			}
 		}
-		vst[pos] = true;	//ÊÖ¶¯²éÕÒ×î½üµãpos
-								//¿ÉÒÔ¿¼ÂÇÒ»ÏÂpriority_queueÔõÃ´Ğ´¿ÉÒÔÌáËÙ
-									//Ëãµ¼µÄì³²¨ÄÇÆõ¶ÑÌáËÙËû×Ô¼ºÒ²ËµÁËÊÇÒ»ÖÖÀíÂÛµÄ×·ÇóÄÇËãÁË°É
-		sum += min;	//Ôö¼Ó×ÜÈ¨Öµ×÷Îª½á¹û
-						//Èç¹ûĞèÒªÊ÷µÄ»°Õâ¸öµØ·½Ó¦¸ÃÓĞÆäËû²Ù×÷
-		for (int j = 0; j < n; ++j)
+		for (int i = 0; i < n; ++i) if (d[i] == 0) q.push(i);
+		int d0;
+		int total_out = 0;	
+		while (!q.empty())
 		{
-			if (!vst[j] && closest[j] > g[j][pos])
+			//è¿™é‡Œæ£€æŸ¥qçš„å¤§å°å¯ä»¥åˆ¤æ–­è·¯å¾„æ˜¯å¦å”¯ä¸€
+			d0 = q.front();
+			q.pop();
+			++total_out;
+			cout << d0 << endl;
+			for (int i = 0; i < n; ++i)
 			{
-				closest[j] = g[j][pos];	//µãÉÏÊ÷ºó¸üĞÂÊ÷ÏÂµÄµã
+				if (d[i] != 0 && g[d0][i] < INF)
+				{
+					--d[i];
+					if (d[i] == 0) q.push(i);
+				}
 			}
 		}
+		return total_out == n;
 	}
-	return sum;
+
+	//Primç®—æ³•è·å¾—æœ€å°ç”Ÿæˆæ ‘(å…¨å¾„æƒå€¼)
+	//æ¨¡æ¿é¢˜POJ1251
+	//æ„Ÿè°¢åšä¸»http://www.cnblogs.com/Veegin/archive/2011/04/29/2032388.htmlæä¾›ä¼˜ç§€çš„åšæ³•
+	int prim(vector<vector<int> > const &g)
+	{
+		int n = g.size();	//é¡¶ç‚¹æ•°
+		int sum = 0;
+		vector<bool> vst(n, false);	//visitedå°±æ˜¯å·²ç»åœ¨æ ‘ä¸Š
+		vector<int> closest(n);
+		vst[0] = true;
+		int pos = 0;
+		for (int i = 1; i < n; ++i)
+		{
+			closest[i] = g[0][i];	//åˆå§‹åŒ–è·ç¦»æ•°ç»„
+										//ä¸é‡‡ç”¨ç®—å¯¼çš„keyæˆå‘˜åšæ³•è€Œæ˜¯å•å¼€æ•°ç»„æ¯•ç«Ÿæ–¹ä¾¿å¥½å†™
+		}
+		for (int i = 0; i < n - 1; ++i)
+		{
+			int min = INF;
+			for (int j = 0; j < n; ++j)
+			{
+				if (!vst[j] && closest[j] < min)
+				{
+					min = closest[j];
+					pos = j;
+				}
+			}
+			vst[pos] = true;	//æ‰‹åŠ¨æŸ¥æ‰¾æœ€è¿‘ç‚¹pos
+									//å¯ä»¥è€ƒè™‘ä¸€ä¸‹priority_queueæ€ä¹ˆå†™å¯ä»¥æé€Ÿ
+										//ç®—å¯¼çš„æ–æ³¢é‚£å¥‘å †æé€Ÿä»–è‡ªå·±ä¹Ÿè¯´äº†æ˜¯ä¸€ç§ç†è®ºçš„è¿½æ±‚é‚£ç®—äº†å§
+			sum += min;	//å¢åŠ æ€»æƒå€¼ä½œä¸ºç»“æœ
+							//å¦‚æœéœ€è¦æ ‘çš„è¯è¿™ä¸ªåœ°æ–¹åº”è¯¥æœ‰å…¶ä»–æ“ä½œ
+			for (int j = 0; j < n; ++j)
+			{
+				if (!vst[j] && closest[j] > g[j][pos])
+				{
+					closest[j] = g[j][pos];	//ç‚¹ä¸Šæ ‘åæ›´æ–°æ ‘ä¸‹çš„ç‚¹
+				}
+			}
+		}
+		return sum;
+	}
 }
