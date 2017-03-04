@@ -1,4 +1,6 @@
 # ACMCodes
+Dedicated to my dearest Miss Z, the girl without whom I wouldn't be the one who I am now.
+
 AC code in several OJ website
 
 Many of these problems are on POJ, http://poj.org/
