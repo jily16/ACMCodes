@@ -48,6 +48,7 @@ namespace graph
 {
 	//拓扑排序
 	//Directed Acyclic Graph(DAG)
+	//返回true说明没有死锁
 	bool torpological_sort(vector<vector<int> > const &g)
 	{
 		int n = g.size();
@@ -191,8 +192,9 @@ namespace graph
 				//如果有前驱子图要维护的话就应该在这
 		}
 	}
+
 	//Dijkstra算法
-		//边权非负
+		//边权非负的有向图的最短路径
 	int dijkstra(vector<vector<int> > const &g, int s, int v)
 	{
 		int n = g.size();
@@ -229,4 +231,45 @@ namespace graph
 		}
 		return d[v];
 	}
+
+	//Bellman-Ford算法
+		//计算可含负权值的有向图的单源最短路径并检测负权环
+			//返回true代表有可行解
+			//false表示有负环
+	//因为要返回bool值所以路径结果只能体现在引用参数值中
+		//d数组不用外部置数
+			//直接给一个新数组就行~
+	bool bellman_ford(vector<vector<int>> const &g, vector<int> &d, int s)
+	{
+		int n = g.size();
+		for (int i = 0; i < n; ++i)	//初始化d数组
+		{
+			d[i] = g[s][i];
+		}
+		for (int i = 0; i < n - 1; ++i)	//核心对所有边进行n-1次松弛
+		{
+			for (int j = 0; j<n; ++j)
+				for (int k = 0; k < n; ++k)
+				{
+					if (g[j][k] < INF)	//有边
+					{
+						relax(g, d, j, k);
+					}
+				}
+		}	//至此已经完成d数组的全部松弛工作
+			//下面判负权环
+		for (int i = 0; i<n; ++i)
+			for (int j = 0; j < n; ++j)
+			{
+				if (g[i][j] < INF)	//是边
+				{
+					if (d[j] > d[i] + g[i][j])
+					{
+						return false;
+					}
+				}
+			}
+		return true;
+	}
+
 }
