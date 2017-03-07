@@ -1,6 +1,6 @@
 /**************************************
 **	author:jily
-**	update:3/4/2017
+**	update:3/7/2017
 **	说明
 **	为了妥协POJ等一系列OJ平台的落伍
 **		模板不采用C++11以后的新特性
@@ -177,5 +177,56 @@ namespace graph
 			}
 		}
 		return sum;
+	}
+
+	//最短路径问题
+	//松弛边<u,v>
+		//Dijkstra和Bellman-Ford的共同必要操作
+	//d是点到源节点地距离
+	void relax(vector<vector<int> > const &g, vector<int> &d, int u, int v)
+	{
+		if (d[v] > d[u] + g[u][v])
+		{
+			d[v] = d[u] + g[u][v];
+				//如果有前驱子图要维护的话就应该在这
+		}
+	}
+	//Dijkstra算法
+		//边权非负
+	int dijkstra(vector<vector<int> > const &g, int s, int v)
+	{
+		int n = g.size();
+		vector<int> d(n);	//到源节点距离
+		for (int i = 0; i < n; ++i)	//这是一步初始化
+		{
+			d[i] = g[s][i];
+		}
+		vector<bool> vst(n, false);
+		int min_d = INF, min_d_pos = 0;
+		while (min_d_pos != -1)
+		{
+			min_d_pos = -1;
+			min_d = INF;
+			for (int i = 0; i < n; ++i)	//找d最小的点
+			{
+				if (!vst[i] && d[i] < min_d)
+				{
+					min_d_pos = i;
+					min_d = d[i];
+				}
+			}
+			if (min_d_pos != -1)	//还有要松弛的边
+			{
+				vst[min_d_pos] = true;
+				for (int i = 0; i < n; ++i)
+				{
+					if (g[min_d_pos][i] < INF)
+					{
+						relax(g, d, min_d_pos, i);
+					}
+				}
+			}
+		}
+		return d[v];
 	}
 }
