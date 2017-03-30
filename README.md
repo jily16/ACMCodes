@@ -1,5 +1,5 @@
 # ACMCodes
-Dedicated to my dearest Miss Z, the girl without whom I wouldn't be the one who I am now.
+Dedicated to my dearest Miss Z, the girl bringing me love and happiness.
 
 AC code in several OJ website
 
