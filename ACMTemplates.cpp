@@ -1,15 +1,11 @@
 /**************************************
 **	author:jily
-**	update:3/7/2017
-**	说明
-**	为了妥协POJ等一系列OJ平台的落伍
-**		模板不采用C++11以后的新特性
-**			中文逗号太丑所以本文宁愿用换行加缩进
-**	图结构的表示默认采用邻接矩阵
+**	update:4/18/2017
 **************************************/
 
 #include <iostream>
 #include <queue>
+#include <string>
 #include <vector>
 using namespace std;
 
@@ -19,8 +15,8 @@ namespace ufs
 {
 	//并查集Union-Find算法
 	//按秩合并
-		//因为维护成本
-			//不路径压缩
+	//结构的ufs可以维护节点之间的相对关系名曰种类并查集
+
 	void init_set(vector<int> &s, vector<int> &rank)
 	{
 		for (int i = 0; i < s.size(); ++i) s[i] = i;
@@ -33,7 +29,7 @@ namespace ufs
 	}
 	void union_set(vector<int> &s, vector<int> &rank, int x, int y)
 	{
-		if (find_key(s, x) == find_key(s, y)) return;
+		if (find_key(s, x) == find_key(s, y)) return;	//不合并已在一组的是有道理的
 		if (rank[x] > rank[y]) s[find_key(s, y)] = x;	//始终应更新根节点或者叫代表节点
 		else if (rank[x] == rank[y])
 		{
@@ -67,7 +63,7 @@ namespace graph
 		}
 		for (int i = 0; i < n; ++i) if (d[i] == 0) q.push(i);
 		int d0;
-		int total_out = 0;	
+		int total_out = 0;
 		while (!q.empty())
 		{
 			//这里检查q的大小可以判断路径是否唯一
@@ -101,7 +97,7 @@ namespace graph
 		for (int i = 1; i < n; ++i)
 		{
 			closest[i] = g[0][i];	//初始化距离数组
-										//不采用算导的key成员做法而是单开数组毕竟方便好写
+									//不采用算导的key成员做法而是单开数组毕竟方便好写
 		}
 		for (int i = 0; i < n - 1; ++i)
 		{
@@ -115,10 +111,10 @@ namespace graph
 				}
 			}
 			vst[pos] = true;	//手动查找最近点pos
-									//可以考虑一下priority_queue怎么写可以提速
-										//算导的斐波那契堆提速他自己也说了是一种理论的追求那算了吧
+								//可以考虑一下priority_queue怎么写可以提速
+								//算导的斐波那契堆提速他自己也说了是一种理论的追求那算了吧
 			sum += min;	//增加总权值作为结果
-							//如果需要树的话这个地方应该有其他操作
+						//如果需要树的话这个地方应该有其他操作
 			for (int j = 0; j < n; ++j)
 			{
 				if (!vst[j] && closest[j] > g[j][pos])
@@ -132,7 +128,7 @@ namespace graph
 
 	//Kruskal算法求最小生成树
 	//与Prim不同
-		//Kruskal维护多个一开始为单节点树的子图并逐渐合并
+	//Kruskal维护多个一开始为单节点树的子图并逐渐合并
 	struct KruskalEdge	//支持权重排序的边
 	{
 		int v1, v2;
@@ -163,8 +159,8 @@ namespace graph
 			}
 		}
 		//下面开始处理
-			//要整棵生成树的话要维护一个π属性的前驱子图
-				//为简化我这里只要一个总权值
+		//要整棵生成树的话要维护一个π属性的前驱子图
+		//为简化我这里只要一个总权值
 		int sum = 0;
 		while (!pq.empty())
 		{
@@ -182,19 +178,19 @@ namespace graph
 
 	//最短路径问题
 	//松弛边<u,v>
-		//Dijkstra和Bellman-Ford的共同必要操作
+	//Dijkstra和Bellman-Ford的共同必要操作
 	//d是点到源节点地距离
 	void relax(vector<vector<int> > const &g, vector<int> &d, int u, int v)
 	{
 		if (d[v] > d[u] + g[u][v])
 		{
 			d[v] = d[u] + g[u][v];
-				//如果有前驱子图要维护的话就应该在这
+			//如果有前驱子图要维护的话就应该在这
 		}
 	}
 
 	//Dijkstra算法
-		//边权非负的有向图的最短路径
+	//边权非负的有向图的最短路径
 	int dijkstra(vector<vector<int> > const &g, int s, int v)
 	{
 		int n = g.size();
@@ -233,12 +229,12 @@ namespace graph
 	}
 
 	//Bellman-Ford算法
-		//计算可含负权值的有向图的单源最短路径并检测负权环
-			//返回true代表有可行解
-			//false表示有负环
+	//计算可含负权值的有向图的单源最短路径并检测负权环
+	//返回true代表有可行解
+	//false表示有负环
 	//因为要返回bool值所以路径结果只能体现在引用参数值中
-		//d数组不用外部置数
-			//直接给一个新数组就行~
+	//d数组不用外部置数
+	//直接给一个新数组就行~
 	bool bellman_ford(vector<vector<int>> const &g, vector<int> &d, int s)
 	{
 		int n = g.size();
@@ -271,5 +267,15 @@ namespace graph
 			}
 		return true;
 	}
+
+}
+
+namespace tree
+{
+
+}
+
+namespace metrix
+{
 
 }
