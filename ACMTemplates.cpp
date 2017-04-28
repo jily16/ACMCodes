@@ -1,6 +1,14 @@
 /**************************************
 **	author:jily
-**	update:4/23/2017
+**	update:4/28/2017
+**************************************/
+
+/**************************************
+**	<<<<Tips>>>>
+**
+**	nonincreasing/nondecreasing非递增/非递减--->非严格单调11334非递减
+**	单调区间求一个数使∑|ai-num|最小那么num是中位数
+**
 **************************************/
 
 #include <queue>
@@ -13,6 +21,8 @@ using namespace std;
 //#define INT32_MAX        2147483647
 #define INF 0x3f3f3f3f	//神奇的无穷大
 #define MAXN 10010
+
+#define SET_ARRAY_0(a) (memset((a),0,(sizeof((a)))))
 
 namespace ufs
 {
@@ -355,7 +365,6 @@ namespace graph
 	//有/无向图最小环
 }
 
-//线段树、树状数组好用到离散化方法，里面有
 namespace tree
 {
 	//Huffman树
@@ -424,15 +433,94 @@ namespace tree
 		}
 	}
 
+	//二叉搜索树
+	//静态
+	//动态
+
 	//线段树
 	//http://www.cnblogs.com/wuyiqi/archive/2012/03/19/2405885.html
+	//http://blog.csdn.net/metalseed/article/details/8039326
+	namespace segment_tree
+	{
+		//基础线段树
+		namespace base
+		{
+			int tree[4 * MAXN + 10];	//数组元素不一定是int，也可能是信息更多的结构，下标从1开始
+			int a[MAXN];	//存数据，下标起点随意吧从0开始OK
+			void build(int i, int al, int ar)	//以tree[i]为根建[a[al],a[ar]]范围的树
+			{
+				if (al == ar) { tree[i] = a[ar]; return; }
+				int m = (al + ar) >> 1;
+				int lc = i << 1;	//i<<1+1======>i<<2坑爹的优先级
+				build(lc, al, m);
+				build(lc + 1, m + 1, ar);
+				//回溯由tree[lc]和tree[lc+1]得到tree[i]信息
+				//比如维护区间最小值
+				tree[i] = min(tree[lc], tree[lc + 1]);
+			}
+			int query(int i, int al, int ar, int ql, int qr)
+			{
+				//树以tree[i]为根，维护了[a[al],a[ar]]范围
+				//在这个范围中查找维护的区间[a[ql],a[qr]]
+				//query(1,start,len(a)-1+start,ql,qr);
+				if (al > qr || ar < ql) return -1;
+				if (al >= ql && ar <= qr) return tree[i];
+				int lc = i << 1;
+				int am = (al + ar) >> 1;
+				int q1 = query(lc, al, am, ql, qr);
+				int q2 = query(lc + 1, am + 1, ar, ql, qr);
+				if (q1 == -1) return q2;	//一边没查询到
+				if (q2 == -1) return q1;
+				//两个后代都查询到综合结果，比如维护最小
+				return min(q1, q2);
+			}
+			/*
+			线段树的父子关系和<<<<管辖>>>>区间的折半关系是对应的
+			*/
+			//单点更新
+			void update(int i, int al, int ar, int id, int v)
+			{
+				if (al == ar) { tree[i] = v; return; }
+				int am = (al + ar) >> 1;
+				int lc = i << 1;
+				//递归更新
+				if (id <= am) update(lc, al, am, id, v);
+				else update(lc + 1, am + 1, ar, id, v);
+				//维护树
+				tree[i] = min(tree[lc], tree[lc + 1]);
+			}
+			//区间更新
+			//对[a[ul],a[ur]]区间执行不可描述之操作
+			//lazy思想，需要一个额外的数组[2*MAXN+10]来暂存父节点的操作(选好方式)，当需要查子节点的时候再pushdown
+			void pushdown(int i);
+			void pushup(int i);	//i的孩子节点已经更新，更新i----->tree[i]=foo(tree[lc],tree[lc+1]);
+			void update(int i, int al, int ar, int ul, int ur)	//签名和单点更新一样，其实这个情况不该出现
+			{
+				if (ul <= al && ur >= ar) {/*modify and mark*/ return; }
+				pushdown(i);
+				int am = (al + ar) >> 1;
+				if (ul <= am) update(i << 1, al, am, ul, ur);	//ul和ur总是ul和ur可不敢自作聪明乱改了...
+				if (ur >= am + 1) update(i << 1 | 1, am + 1, ar, ul, ur);
+				pushup(i);
+			}
+			int query(int i, int al, int ar, int ql, int qr)
+			{
+				//if(marked(i)) pushdown(i);
+				//哎呀理解之后好简单不写了。。。
+			}
+		}
+
+		//可持久化线段树/函数式线段树/主席树
+		//http://www.cnblogs.com/zinthos/p/3899565.html
+		//http://www.cnblogs.com/tedzhao/archive/2008/11/12/1332112.html
+	}
 
 	//区间树
 
 	//树状数组(binary indexed tree)
 	//区间和的维护(数组前缀和)
 	//https://www.topcoder.com/community/data-science/data-science-tutorials/binary-indexed-trees/#prob
-	//重点!!!BIT维护的是cumulative frequency table是区间的frequency频数!!!!!
+	//重点!!!BIT维护的是<<<<cumulative frequency table>>>>是区间的frequency频数!!!!!
 	//树状数组，as well as线段树，数组长度是数据范围，当压力很大时要离散化也就是下面discretization的事情
 	namespace bit
 	{
@@ -461,6 +549,7 @@ namespace tree
 				}
 				return ret;
 			}
+
 			//维护之加dif
 			void update(int pos, int dif)
 			{
@@ -470,10 +559,8 @@ namespace tree
 					pos += LOWBIT(pos);
 				}
 			}
-			void init()
-			{
-				for (int i = 1; i < MAXN; ++i) update(i, a[i]);
-			}
+
+			void init() { for (int i = 1; i < MAXN; ++i) update(i, a[i]); }
 		}
 
 		//二维
@@ -486,28 +573,135 @@ namespace tree
 	//离散化
 	namespace discretization
 	{
-		int a[MAXN];	//真正数据数组的副本
-		void foo()
+		struct DCT
 		{
-			std::sort(a, a + MAXN);
-			int size = std::unique(a, a + MAXN) - a;
-			for (int i = 0; i < size; ++i) a[i] = lower_bound(a, a + size, a[i]) - a + 1;
+			int v, id;
+		};
+		bool operator<(DCT const &d1, DCT const &d2) { return d1.v < d2.v; }
+		bool operator==(DCT const &d1, DCT const &d2) { return d1.v == d2.v; }	//unique中值相等就去重
+		int a[MAXN];
+		DCT b[MAXN];
+		void fu_ktion()
+		{
+			for (int i = 0; i < MAXN; ++i)
+			{
+				b[i].id = i;
+				b[i].v = a[i];
+			}
+			std::sort(b, b + MAXN);
+			int dsize = std::unique(b, b + MAXN) - b;
+			//至此有了第i(0...dsize-1)小的数和值b[i].v的映射
 		}
 	}
 
 	//树链剖分
 
 	//trie树
+	namespace trie
+	{
+		//MAXNODE有讲究，最大大不了就是单词数*长度，这是一个单词首尾相接的一维静态树
+		int const MAXNODE = 100010;
+		int const CHARSET = 10;
+		char const base = '0';
+		/*一维树大概长这个样子
+		1---(j)--->2---(i)--->3---(l)--->4---(y)--->5
+		           |
+				  (l)
+				   |
+				   6---(y)--->7
+		*/
+		struct Trie
+		{
+			int child[MAXNODE][CHARSET];	//树其实是一个一维数组交错跑的好多路线，第二维标记下一节点
+			bool finish[MAXNODE];	//这一节点是否是单词结束
+			int root;	//根是1，child[i][j]==0表示没有j方向的分支
+			int tot;	//共多少节点在用
+			Trie() :root(1), tot(1)
+			{
+//				memset(child, 0, sizeof(child));
+				SET_ARRAY_0(child);
+				for (int i = 0; i < MAXNODE; ++i) finish[i] = false;
+			}
+			//查短串前缀s存在
+			//理清楚是插长查短还是插短查长
+			bool find(char const *s)
+			{
+				int cur = root;
+				for (char const *p = s; *p && cur; ++p) cur = child[cur][*p - base];
+				return cur != 0;	//s顺利跑完
+				//查完整单词
+				//return cur && finish[cur];	//s跑完 && 到树叶
+			}
+			void insert(char const *s)
+			{
+				int cur = root;
+				for (char const *p = s; *p; ++p)
+				{
+					int &ref = child[cur][*p - base];
+					if (!ref)
+					{
+						ref = ++tot;
+						cur = tot;
+					}
+					else cur = ref;
+				}
+				finish[cur] = true;
+			}
+		};
+	}
 
 	//堆
 
 
 	//AVL树
 
-	//静态二叉检索树
-
 	//左偏树
 	//可合并堆
+	namespace leftist_tree	//mergeable heap
+	{
+		//定义bool operator<(T const &t1, T const &t2)的类型
+		//和std::priority_queue接口尽量一致(大根堆)
+		template<T>
+		struct LeftishTree
+		{
+			int tot;	//共用多少个节点已经
+			T v[MAXN];	//一维静态树
+			int dis[MAXN];
+			int l[MAXN];
+			int r[MAXN];
+			LeftishTree() :tot(0)
+			{
+				SET_ARRAY_0(v);
+				SET_ARRAY_0(dis);
+				SET_ARRAY_0(l);
+				SET_ARRAY_0(r);
+			}
+			int merge(int a, int b)
+			{
+				if (!a) return b;
+				if (!b) return a;
+				if (v[a] < v[b]) swap(a, b);
+				r[a] = merge(r[a], b);
+				if (dis[l[a]] < dis[r[a]]) swap(l[a], r[a]);
+				dis[a] = dis[r[a]] + 1;
+				return a;
+			}
+			int init(T w)	//返回新树的根
+			{
+				++tot;
+				v[tot] = w;
+				l[tot] = r[tot] = dis[tot] = 0;
+				return tot;
+			}
+			int insert(int x, T w)	//向x树插入权重w的点返回这棵树的新根
+			{
+				return merge(x, init(w));
+			}
+			T top(int x) { return v[x]; }	//树根自然是top	//返回0空树
+			int pop(int x) { return merge(l[x], r[x]); }	//返回0说明树pop空了
+			//int size() { return tot; }	//tot对外是没有价值的，pop不会缩tot
+		};
+	}
 
 	//前缀树
 
@@ -557,6 +751,7 @@ namespace metrix
 namespace string
 {
 	//KMP算法
+	//http://www.cnblogs.com/jackge/archive/2013/01/05/2846006.html
 }
 
 namespace hash
@@ -568,3 +763,5 @@ namespace big
 {
 	//高精度数字类
 }
+
+//LCA
