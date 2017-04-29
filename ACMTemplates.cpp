@@ -743,9 +743,55 @@ namespace dp
 	//数位dp
 }
 
-namespace metrix
+namespace matrix
 {
-	//矩阵快速幂
+	/*
+	矩阵Size:Row*Col
+	快速幂中矩阵为方阵
+	*/
+	const int Row = 3;
+	const int Col = 3;
+	const int mod = 1e9 + 7;
+	typedef struct Matrix
+	{
+		long long m[Row][Col];
+	} Matrix;
+	Matrix operator * ( Matrix a, Matrix b ) //通用矩阵乘法
+	{
+		Matrix res;
+		for ( int i = 0; i < Row; i++ )
+		{
+			for ( int j = 0; j < Col; j++ )
+			{
+				res.m[i][j] = 0;
+				for ( int k = 0; k < Row ; k++ )
+				{
+					res.m[i][j] += a.m[i][k] * b.m[k][j];
+					res.m[i][j] %= mod;
+				}
+			}
+		}
+		return res;
+	}
+	Matrix fast_power ( Matrix a, long long n )
+	{
+		Matrix res;
+		memset ( res.m, 0, sizeof ( res.m ) );
+		for ( int i = 0; i < Row; i++ ) //构造单位矩阵，单位矩阵必为方阵所以取Row;
+			res.m[i][i] = 1;
+		if ( n == 1 )
+			return a;
+		while ( n )
+		{
+			if ( n & 1 ) // n为奇数
+			{
+				res = res * a;
+			}
+			n >>= 1;
+			a = a * a;
+		}
+		return res;
+	}
 }
 
 namespace string
@@ -765,3 +811,4 @@ namespace big
 }
 
 //LCA
+
