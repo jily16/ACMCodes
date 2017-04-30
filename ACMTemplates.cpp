@@ -798,6 +798,47 @@ namespace string
 {
 	//KMP算法
 	//http://www.cnblogs.com/jackge/archive/2013/01/05/2846006.html
+	int next[MAXN];
+	std::string str_fa; //待匹配串
+	std::string str_son; //子串
+	void get_next ( )
+	{
+		memset ( next, 0, sizeof ( next ) );
+		int i = 0; int j = -1;
+		next[0] = -1;
+		int len = str_son.size();
+		while ( i < len )
+			if ( j == -1 || str_son[i] == str_son[j] )
+			{
+				i++;
+				j++;
+				next[i] = j;
+			}
+			else
+				j = next[j];
+	}
+	int KMP ( int pos ) //匹配起始位置为str_fa[pos]
+	{
+		int i = pos;
+		int j = -1;
+		int len_fa =str_fa.size();
+		int len_son =str_son.size();
+		get_next();
+		while ( i < len_fa && j < len_son )
+		{
+			if ( j == -1 || str_fa[i] == str_son[j] )
+			{
+				i++;
+				j++;
+			}
+			else
+				j = next[j];
+		}
+		if(j >= len_son)
+			return i-len_son; //返回字串第一次出现位于父串位置。
+		return 0;
+
+	}
 }
 
 namespace hash
@@ -811,4 +852,3 @@ namespace big
 }
 
 //LCA
-
